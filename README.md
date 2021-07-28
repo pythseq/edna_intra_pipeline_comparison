@@ -32,6 +32,7 @@ _________________________________
 ## Introduction
 
 This project aims to compare twelve bioinformatics pipelines based on five existing metabarcoding programs to make recommendations for data management in intraspecific variability studies using environmental DNA.
+
 Data processing is necessary in metabarcoding studies to eliminate false sequences which are generated during amplification and sequencing, and particularly for intraspecific studies from eDNA samples, where the presence of false sequences in the data can over-estimate the intraspecific genetic variability.
 That is why there is a need in filtering sequences with bioinformatics pipelines. Different bioinformatics tools have been developped for metabarcoding studies. Here, we propose to compare some of them, by building twelve unique pipelines.
 
@@ -50,16 +51,8 @@ In our study, we analyze the results of a paired-end sequencing, after extractio
 
 ### Preliminary steps for OBITools
 
-- First you need to have Anaconda installed
+You need to have Anaconda installed. If it's not the case, click on this [link](https://www.anaconda.com/products/individual/get-started) and download it. Install the download in your shell, close your shell and reopen it.
 
-If it's not the case, click on this [link](https://www.anaconda.com/products/individual/get-started) and download it.
-
-Install the download in your shell :
-```
-bash Anaconda3-2020.07-Linux-x86_64.sh
-```
-
-Then, close your shell and reopen it.
 Verify conda is correctly installed. It should be here :
 ```
 ~/anaconda3/bin/conda
@@ -70,24 +63,54 @@ Write the following line :
 conda config --set auto_activate_base false
 ```
 
-- Create your new environment obitools from your root in your corresponding path. For example :
+Then, create your new environment obitools from your root in your corresponding path. For example :
 ```
 ENVYAML=./dada2_and_obitools/obitools_env_conda.yaml
 conda env create -f $ENVYAML
 ```
 
-Now you can activate your environment :
+Now you can activate your environment before starting OBITOOLS commands :
 ```
 conda activate obitools
 ```
+
 And deactivate it :
 ```
 conda deactivate
 ```
 ### Preliminary steps for DADA2
 
+You need to have a recent R version (3.6.2 minimum). If it's not the case, click on this [link](hhttps://cran.r-project.org/) and download it.
+
+Then, open your IDE (RStudio for example), and install the package :
+```
+install.packages("dada2")
+```
+
 ### Preliminary steps for SWARM
+
+Get the compressed packaged on the [creator GitHub](https://github.com/torognes/swarm) in your downloads folder and install it :
+```
+git clone https://github.com/torognes/swarm.git
+cd swarm/
+make
+```
 
 ### Preliminary steps for LULU
 
+Open your IDE for R (RStudio for example), and install the package :
+```
+install.packages("lulu")
+```
+
 ### Preliminary steps for VSEARCH
+
+Get the compressed packaged on the [creator GitHub](https://github.com/torognes/vsearch) in your downloads folder and install it :
+```
+git clone https://github.com/torognes/vsearch.git
+cd vsearch
+./autogen.sh
+./configure
+make
+sudo make install
+```
