@@ -29,7 +29,7 @@ _________________________________
 _________________________________
 
 <a name="intro"></a>
-## Introduction
+## I - Introduction
 
 This project aims to compare twelve bioinformatics pipelines based on five existing metabarcoding programs to make recommendations for data management in intraspecific variability studies using environmental DNA.
 
@@ -47,7 +47,7 @@ For that, we use the following programs :
 In our study, we analyze the results of a paired-end sequencing, after extraction and amplification of filtrated eDNA from aquarium seawater, to detect intraspecific haplotypic variability in *Mullus surmuletus*.
 
 <a name="install"></a>
-## Installation
+## II - Installation
 
 ### Preliminary steps for OBITools
 
@@ -89,7 +89,7 @@ install.packages("dada2")
 
 ### Preliminary steps for SWARM
 
-Get the compressed packaged on the [creator GitHub](https://github.com/torognes/swarm) in your downloads folder and install it :
+Get the compressed folder on the [creator GitHub](https://github.com/torognes/swarm) in your downloads folder and install it :
 ```
 git clone https://github.com/torognes/swarm.git
 cd swarm/
@@ -105,7 +105,7 @@ install.packages("lulu")
 
 ### Preliminary steps for VSEARCH
 
-Get the compressed packaged on the [creator GitHub](https://github.com/torognes/vsearch) in your downloads folder and install it :
+Get the compressed folder on the [creator GitHub](https://github.com/torognes/vsearch) in your downloads folder and install it :
 ```
 git clone https://github.com/torognes/vsearch.git
 cd vsearch
@@ -114,3 +114,127 @@ cd vsearch
 make
 sudo make install
 ```
+
+<a name="step1"></a>
+## III - Pre-processing steps
+
+### Merging paired-end sequenced reads (OBITOOLS)
+
+Activate your environment for OBITOOLS in your shell :
+```
+conda activate obitools
+```
+
+Use the command _illuminapairedend_ to make the paired-end merging from the forward and reverse strands of the sequences you have in your data. The command aligns the complementary strands in order to get a longer sequence. In fact, after PCR, the last bases are rarely correctly sequenced. So having the forward and the reverse strands allows to lenghten the sequence, thanks to the beginning of the reverse strand, which is usually correctly sequenced.
+```
+illuminapairedend --score-min=40 -r mullus_surmuletus_data/Aquarium_2_F.fastq mullus_surmuletus_data/Aquarium_2_R.fastq > Aquarium_2.fastq
+# a new .fastq file is created, it contains the sequences after the merging of forward and reverse strands
+# alignments which have a quality score higher than 40 (-- score-min=40) are merged and annotated "aligned", while alignemnts with a lower quality score are concatenated and annotated "joined"
+```
+
+To only conserve the sequences which have been merged, use _obigrep_ :
+```
+obigrep -p 'mode!="joined"' Aquarium_2.fastq > Aquarium_2.ali.fastq
+# -p requires a python expression
+# python creates a new dataset (.ali.fastq) which only contains the sequences annotated "aligned"
+```
+
+### Demultiplexing (OBITOOLS)
+
+A _.txt_ file assigns each sequence to its sample thanks to its tag, because each tag corresponds to a reverse or a forward sequence from a sample.
+
+To compare the sequences next, you need to remove the tags and the primers, by using the _ngsfilter_ command :
+```
+ngsfilter -t mullus_surmuletus_data/Med_corr_tags.txt -u Aquarium_2.unidentified.fastq Aquarium_2.ali.fastq > Aquarium_2.ali.assigned.fastq
+# the command creates new files :
+# ".unidentified.fastq" file contains the sequences that were not assigned whith a correct tag
+# ".ali.assigned.fastq" file contains the sequences that were assigned with a correct tag, so they contain only the barcode sequences
+```
+
+Then, separate your _.ali.assigned.fastq_ files depending on their samples in placing them in a dedicated folder (useful for next steps) :
+```
+mkdir samples
+# creates the folder
+mv -t samples Aquarium_2.ali.assigned.fastq
+# places the latests ".fastq" files in the folder
+cd samples
+obisplit -t samples --fastq sample/Aquarium_2.ali.assigned.fastq
+# separates the files depending on their samples
+mv -t ./dada2_and_obitools Aquarium_2.ali.assigned.fastq
+# removes the original files from the folder
+```
+
+Now you have as many files as samples, containing demultiplexed sequences.
+
+### Be prepared for DADA2
+
+Quit your shell and open your IDE for R.
+
+First you have to load the dada2 package :
+```
+library("dada2")
+```
+
+Select the files you want to analyze in your path containing your demultiplexed data :
+```
+fns <- sort(list.files(path, pattern = ".fastq"", full.names = T))
+# the function only extracts files that end with the chosen pattern and they are extracted with their whole path
+```
+
+And select the part of the files name you want to keep :
+```
+sample.names <- sapply(strsplit(basename(fns), ".fastq"), '[', 1)
+# the function "basename" removes all the path up to the file name
+# the function "strsplit" removes the pattern written
+```
+
+### Filtering & Trimming (DADA2)
+
+Initiate the creation of a new folder to store the filtered sequences generated :
+```
+filts <- file.path(path, "filtered", paste0(sample.names, ".filt.fastq.gz"))
+# builds the path to the new folder, which will be located in the path already used and which name will be "filtered"
+# the files are named as described before with sample.names, and the pattern ".filt.fastq.gz" will be added
+```
+
+These files are created after trimming and filtering with different criteria :
+```
+out <- filterAndTrim(fns, filts,
+                     truncLen = 235,
+                     maxN = 0,
+                     maxEE = 1,
+                     compress = T,
+                     verbose = T)
+# "truncLen" value is chosen considering the marker length and define were the reads will be trimmed (after 235 bp here), and reads which are shortened than this value are filtered
+# "maxN" is the number of N tolerated in the sequences after filtering (0 here)
+# "maxEE" define the maximal number of expected errors tolerated in a read (1 here), based on the quality score (EE = sum(10^(-Q/10)))
+# "compress = T" means that the files will be gzipped
+# "verbose = T" means that information concerning the number of sequences after filtering will be given
+```
+
+The filtering permits to clean the data to eliminate a large number of unexploitable sequences for our study, and the trimming permits to facilitate the sequence comparison in the next steps.
+
+### Dereplication (DADA2)
+
+Now you can eliminate all the replications of each sequence from the new _.fastq.gz_ files :
+```
+derep <- derepFastq(filts)
+# the function annotates each sequence with his abundance
+```
+
+This dereplication will considerably reduce the processing time of the next steps, and no information is lost as the abundance (or read count) of each sequence is now annotated in its header.
+
+<a name="step2"></a>
+## IV - Key processing steps
+
+<a name="step21"></a>
+## IV - 1 - OBITOOLS processing step (Pipelines A)
+
+<a name="step22"></a>
+## IV - 2 - DADA2 processing step (Pipelines B)
+
+<a name="step23"></a>
+## IV - 3 - SWARM processing step (Pipelines C)
+
+<a name="step24"></a>
+## IV - 4 - SWARM + LULU processing step (Pipelines D)
