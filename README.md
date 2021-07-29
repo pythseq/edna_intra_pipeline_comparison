@@ -247,6 +247,8 @@ obiclean -r 0.05 -H Aquarium_2.fasta > Aquarium_2.clean.fasta
 # here, the command only returns only the sequences tagged "head" by the algorithm, and the chosen ratio is 0.05
 ```
 
+For more details on this OBITOOLS processing step, see the original publication [here](https://doi.org/10.1111/1755-0998.12428).
+
 <a name="step22"></a>
 ### IV - 2 - DADA2 processing step (Pipelines B)
 
@@ -272,6 +274,8 @@ uniqueSeqs <- getUniques(seqtab)
 uniquesToFasta(uniqueSeqs, paste0("PipelineB_", sample.names[k], ".fasta"))
 # creates a new ".fasta" file constaining the ASVs
 ```
+
+For more details on this DADA2 processing step, see the original publication [here](https://doi.org/10.1038/nmeth.3869).
 
 <a name="step23"></a>
 ### IV - 3 - SWARM processing step (Pipelines C)
