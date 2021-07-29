@@ -20,11 +20,12 @@ _________________________________
     + [IV - 2 - DADA2 processing step (Pipelines B)](#step22)
     + [IV - 3 - SWARM processing step (Pipelines C)](#step23)
     + [IV - 4 - SWARM + LULU processing step (Pipelines D)](#step24)
-  * [V - Post-processing steps](#step3)
-    + [V - 1 - No post-processing step (Pipelines A1/B1/C1/D1)](#step31)
-    + [V - 2 - Bimeric sequences removal (Pipelines A2/B2/C2/D2)](#step32)
-    + [V - 3 - Chimeric sequences removal (Pipelines A3/B3/C3/D3)](#step32)
-  * [VI - Analyse your results](#step4)
+  * [V - Abundance filtering step](#step3)  
+  * [VI - Post-processing steps](#step4)
+    + [VI - 1 - No post-processing step (Pipelines A1/B1/C1/D1)](#step41)
+    + [VI - 2 - Bimeric sequences removal (Pipelines A2/B2/C2/D2)](#step42)
+    + [VI - 3 - Chimeric sequences removal (Pipelines A3/B3/C3/D3)](#step43)
+  * [VII - Analyse your results](#step5)
 
 _________________________________
 
@@ -44,7 +45,11 @@ For that, we use the following programs :
 - [LULU](https://github.com/tobiasgf/lulu) : a R package
 - [VSEARCH](https://github.com/torognes/vsearch) : a set of commands written in C++
 
-In our study, we analyze the results of a paired-end sequencing, after extraction and amplification of filtrated eDNA from aquarium seawater, to detect intraspecific haplotypic variability in *Mullus surmuletus*.
+The following figure summarizes the twelve pipelines compared in our study :
+
+![Figure](Figure.png)
+
+In our study, we analyze the results of a paired-end sequencing, after extraction and amplification of filtrated eDNA from aquarium seawater, to detect intraspecific haplotypic variability in *Mullus surmuletus*. Only one aquarium is given as example in the scripts.
 
 <a name="install"></a>
 ## II - Installation
@@ -228,13 +233,24 @@ This dereplication will considerably reduce the processing time of the next step
 ## IV - Key processing steps
 
 <a name="step21"></a>
-## IV - 1 - OBITOOLS processing step (Pipelines A)
+### IV - 1 - OBITOOLS processing step (Pipelines A)
+
+The OBITOOLS command used in pipelines A is _obiclean_. This command eliminates punctual errors caused during PCR. The algorithm makes parwise alignments for all the amplicons. It counts the number of dissimilarities between the  amplicons, and calculates the ratio between the abundance of the two amplicons aligned. If there is only 1 dissimilarity (parameter by default, can be modified by the user) and if the ratio is lower than a threshold set by the user, the less abundant amplicon is considered as a variant of the most abundant one.
+
+Sequences which are at the origin of variants without being considered as one are tagged "head". The variants are tagged "internal". The other sequences are tagged "singleton".
+
+```
+obiclean -r 0.05 -H Aquarium_2.fasta > Aquarium_2.clean.fasta
+# here, the command only returns only the sequences tagged "head" by the algorithm, and the chosen ratio is 0.05
+```
+
+By only conserving the sequences tagged "head", most of erroneous sequences are eliminated.
 
 <a name="step22"></a>
-## IV - 2 - DADA2 processing step (Pipelines B)
+### IV - 2 - DADA2 processing step (Pipelines B)
 
 <a name="step23"></a>
-## IV - 3 - SWARM processing step (Pipelines C)
+### IV - 3 - SWARM processing step (Pipelines C)
 
 <a name="step24"></a>
-## IV - 4 - SWARM + LULU processing step (Pipelines D)
+### IV - 4 - SWARM + LULU processing step (Pipelines D)

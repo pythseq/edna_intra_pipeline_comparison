@@ -1,0 +1,1 @@
+obiclean -r 0.05 -H Aquarium_2.fasta > PipelineA_Aquarium_2.fasta
