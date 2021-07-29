@@ -239,15 +239,39 @@ The OBITOOLS command used in pipelines A is _obiclean_. This command eliminates 
 
 Sequences which are at the origin of variants without being considered as one are tagged "head". The variants are tagged "internal". The other sequences are tagged "singleton".
 
+By only conserving the sequences tagged "head", most of erroneous sequences are eliminated.
+
+The following line is lanched in a shell, after the R pre-processing steps :
 ```
 obiclean -r 0.05 -H Aquarium_2.fasta > Aquarium_2.clean.fasta
 # here, the command only returns only the sequences tagged "head" by the algorithm, and the chosen ratio is 0.05
 ```
 
-By only conserving the sequences tagged "head", most of erroneous sequences are eliminated.
-
 <a name="step22"></a>
 ### IV - 2 - DADA2 processing step (Pipelines B)
+
+The DADA2 function used in pipelines B is _learnErrors_. This function is able to distinguish the incorrect sequences from the correct sequences generated during amplification and sequencing, by estimating the sequencing error rate.
+
+To build the error model, the function alternates estimation of the error rate and inference of sample composition until they converge on a jointly consistent solution.
+
+The algorithm calculates the abundance p-value for each sequence. This p-value is defined by a Poisson distribution, with a parameter correspondig to the rate of amplicons of a sequence i generated from a sequence j.
+
+Before that, a partition is built with the most abundant sequence as the core. All the other sequences are compared to this core. The sequence with the smallest p-value is analyzed : if this p-value is inferior than a parameter of the algorithm (OMEGA_A), this sequence become the core of a new partition. The other sequences joins the partition most likely to have produced the core. This operation is repeated until there is no p-value which falls under the parameter OMEGA_A.
+
+Then, all the sequences from a partition are transformed into their core, so each partition corresponds to a unique sequence : the ASV (Amplicon sequence variant).
+
+The following lines are lanched in R following the R pre-processing steps :
+```
+err <- learnErrors(derep[k], randomize=T)
+# builds the error model
+dadas <- dada(derep[k], err)
+# eliminates the false sequences identified by the model to oncly conserve ASVs
+seqtab <- makeSequenceTable(dadas)
+# constructs a sequence table with the sequences filtered
+uniqueSeqs <- getUniques(seqtab)
+uniquesToFasta(uniqueSeqs, paste0("PipelineB_", sample.names[k], ".fasta"))
+# creates a new ".fasta" file constaining the ASVs
+```
 
 <a name="step23"></a>
 ### IV - 3 - SWARM processing step (Pipelines C)
