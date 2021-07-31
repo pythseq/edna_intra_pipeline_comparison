@@ -1,0 +1,1 @@
+vsearch --usearch_global Aquarium_2.fasta --db Aquarium_2.fasta --self --id .84 --iddef 1 --userout match_list_Aquarium_2.txt -userfields query+target+id --maxaccepts 0 --query_cov .9 --maxhits 10

@@ -302,4 +302,8 @@ For more details on this SWARM processing step, see the original publication [he
 <a name="step24"></a>
 ### IV - 4 - SWARM + LULU processing step (Pipelines D)
 
+For pipelines D, the same SWARM algorithm than in pipelines C was used, with an additional post-clustering step run thanks to the LULU algorithm.
+
+LULU eliminates OTUs by flagging the alleged erroneous OTUs of more abundant OTUs and merges them. The algorithm requires an OTU match list to provide the pairwise similarity scores of the OTUs, with a minimum threshold of sequence similarity set at 84% as recommended by the authors. Only OTU pairs with a sequence similarity above 84% can then be interpreted as “parent” for the most abundant one and “daughter” for the other. Both OTU will possibly be merged provided that the co-occurrence pattern of the OTU pair among samples is higher than 95% and the abundance ratio between the “potential parent” and “potential daughter” is higher than a minimum ratio set by default as the minimum observed ratio.
+
 For more details on LULU, see the original publication [here](https://doi.org/10.1038/nmeth.3869).
