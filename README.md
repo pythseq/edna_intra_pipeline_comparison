@@ -280,5 +280,26 @@ For more details on this DADA2 processing step, see the original publication [he
 <a name="step23"></a>
 ### IV - 3 - SWARM processing step (Pipelines C)
 
+In pipelines C, SWARM gathers the sequences in OTU thanks to this algorithm :
+- First, sequences are pairwise aligned to count the number of dissimilarities between them
+- A threshold _d_ is chosen, when the number of dissimilarities is inferior or equal to _d_, both sequences are gathered in a same OTU
+- This process is repeated to add iteratively the sequences to an OTU
+- The most abundant sequence of each OTU is chosen to represent the OTU
+- The abundance of the OTU is constituted by adding the abundances of each sequence included in the OTU
+
+The following line process the algorithm :
+```
+swarm -z -d 1 -o stats_Aquarium_2.txt -w Aquarium_2.clustered.fasta < Aquarium_2.fasta
+# "-z" option permits to accept the abundance in the header, provided that there is no space in the header and that the value is preceded by "size="
+# "-d" is the maximal number of differences tolerated between 2 sequences to be gathered in the same OTU (1 here)
+# "-o" option returns a ".txt" file in which each line corresponds to an OTU with all the amplicons belonging to this OTU
+# "-w" option gives a "fasta" file with the representative sequence of each OTU
+```
+An option called _fastidious_ can be added, with  _-f_, in order to integrate small OTUs in larger related OTUs. We don't use it here because it doesn't change the output at all in our study. 
+
+For more details on this SWARM processing step, see the original publication [here](https://doi.org/10.1038/nmeth.3869).
+
 <a name="step24"></a>
 ### IV - 4 - SWARM + LULU processing step (Pipelines D)
+
+For more details on LULU, see the original publication [here](https://doi.org/10.1038/nmeth.3869).
