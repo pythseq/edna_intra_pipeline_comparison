@@ -1,0 +1,1 @@
+vsearch --uchime3_denovo Aquarium_2.fasta --nonchimeras Aquarium2_uchime3.fasta

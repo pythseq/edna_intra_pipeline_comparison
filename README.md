@@ -324,3 +324,61 @@ curated_results
 ```
 
 For more details on LULU, see the original publication [here](https://doi.org/10.1038/nmeth.3869).
+
+<a name="step3"></a>
+## V - Abundance filtering step
+
+In order to manipulate less data and to eliminate an important number of erroneous sequences, an abundance filtering is applied at this step. We used the _obigrep_ command from the OBITOOLS, to eliminate sequences with an abundance inferior to 10, with the following line :
+```
+obigrep -p 'count>=10' Aquarium_2.fasta > Aquarium_2.grep.fasta
+# "-p 'count>=10'" option eliminates sequences with an abundance inferior to 10
+```
+
+In our study, this step permitted to eliminate a several number of sequences, without eliminated any true haplotype in the aquarium experiment.
+
+<a name="step4"></a>
+## VI - Post-processing steps
+
+<a name="step41"></a>
+### VI - 1 - No post-processing step (Pipelines A1/B1/C1/D1)
+
+After the key processing step, you can decide to stop your pipeline here, use no more program and directly analyze your results.
+
+<a name="step42"></a>
+### VI - 2 - Bimeric sequences removal (Pipelines A2/B2/C2/D2)]
+
+Definition : _We call chimeric sequences, or PCR-mediated recombinant, sequences built from a merging of different closely related DNA templates during PCR. By extension, we call bimeras the two-parent chimeric sequences._
+
+For pipelines A2, B2, C2 and D2, sequences considered as bimeras, or two-parent chimeras, are removed using the _removeBimeraDenovo_ function from DADA2. This function mostly points out bimeras by aligning each sequence with all more abundant sequences and detecting a combination of an exact “right parent” and an exact “left parent” of this sequence.
+
+You can remove the sequences considered as bimeras in the table by directly creating a new table, and repeating the same functions for create a new fasta file :
+
+```
+tab <- read.table(Aquarium_2.fasta, header=T)
+seqtab_1 <- makeSequenceTable(tab)
+seqtab_2 <- removeBimeraDenovo(seqtab_1, verbose=T)
+# processes the bimera removal
+
+uniqueSeqs <- getUniques(seqtab_2)
+uniquesToFasta(uniqueSeqs, paste0(sample.names, ".fasta")
+# creates the new file without bimeras
+```
+
+For more details on this DADA2 bimera removal step, see the original publication [here](https://doi.org/10.1038/nmeth.3869).
+
+<a name="step43"></a>
+### VI - 3 - Chimeric sequences removal (Pipelines A3/B3/C3/D3)]
+
+For pipelines A3, B3, C3 and D3, chimeras are removed using *uchime3_denovo* command from VSEARCH program. This command is based on the UCHIME2 algorithm. Each sequence is divided into four segments, and the command mostly searches for similarity for each segment to all other sequences using a heuristic method. The best potential parent sequences are then selected, and the query sequence is considered as chimera if a set of default parameters is not exceeded.
+
+The unique following line realizes this algorithm and gives the data without chimeras :
+```
+vsearch --uchime3_denovo Aquarium_2.fasta --nonchimeras Aquarium2_uchime3.fasta
+```
+
+For more details on this VSEARCH chimera removal step, see the original UCHIME2 publication [here](https://doi.org/10.1101/074252).
+
+<a name="step5"></a>
+## VII - Analyse your results
+
+Now you can make a statistical analysis to evaluate your filtering quality, after comparing the amplicons returned by the pipeline with your reference dataset.
