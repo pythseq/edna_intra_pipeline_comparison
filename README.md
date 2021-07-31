@@ -280,12 +280,7 @@ For more details on this DADA2 processing step, see the original publication [he
 <a name="step23"></a>
 ### IV - 3 - SWARM processing step (Pipelines C)
 
-In pipelines C, SWARM gathers the sequences in OTU thanks to this algorithm :
-- First, sequences are pairwise aligned to count the number of dissimilarities between them
-- A threshold _d_ is chosen, when the number of dissimilarities is inferior or equal to _d_, both sequences are gathered in a same OTU
-- This process is repeated to add iteratively the sequences to an OTU
-- The most abundant sequence of each OTU is chosen to represent the OTU
-- The abundance of the OTU is constituted by adding the abundances of each sequence included in the OTU
+In pipelines C, SWARM gathers the sequences in OTUs (Operational taxonomic units). First, sequences are pairwise aligned to count the number of dissimilarities between them. A threshold _d_ is chosen by the user, and when the number of dissimilarities is inferior or equal to _d_, both sequences are gathered in a same OTU. This process is then repeated to add iteratively each sequences to an OTU, and the most abundant sequence of each OTU is chosen to represent the OTU. The abundance of the OTU is constituted by adding the abundances of each sequence included in the OTU
 
 The following line process the algorithm :
 ```
@@ -304,6 +299,28 @@ For more details on this SWARM processing step, see the original publication [he
 
 For pipelines D, the same SWARM algorithm than in pipelines C was used, with an additional post-clustering step run thanks to the LULU algorithm.
 
-LULU eliminates OTUs by flagging the alleged erroneous OTUs of more abundant OTUs and merges them. The algorithm requires an OTU match list to provide the pairwise similarity scores of the OTUs, with a minimum threshold of sequence similarity set at 84% as recommended by the authors. Only OTU pairs with a sequence similarity above 84% can then be interpreted as “parent” for the most abundant one and “daughter” for the other. Both OTU will possibly be merged provided that the co-occurrence pattern of the OTU pair among samples is higher than 95% and the abundance ratio between the “potential parent” and “potential daughter” is higher than a minimum ratio set by default as the minimum observed ratio.
+LULU eliminates some OTUs by merging them to closest more abundant OTUs. The algorithm requires the OTU table procured by SWARM, and an OTU match list to provide the pairwise similarity scores of the OTUs, with a minimum threshold of sequence similarity set at 84% as recommended by the authors. Only OTU pairs with a sequence similarity above 84% can then be interpreted as “parent” for the most abundant one and “daughter” for the other.
+
+As recommanded by the authors, the following line, running with the VSEARCH program, gives an OTU match list :
+```
+vsearch --usearch_global Aquarium_2.fasta --db Aquarium_2.fasta --self --id .84 --iddef 1 --userout match_list_Aquarium_2.txt -userfields query+target+id --maxaccepts 0 --query_cov .9 --maxhits 10
+```
+
+Both OTU will possibly be merged provided that the co-occurrence pattern of the OTU pair among samples is higher than 95% and the abundance ratio between the “potential parent” and “potential daughter” is higher than a minimum ratio set by default as the minimum observed ratio.
+
+The following lines, run in a R IDE, process the post-clustering curation :
+```
+library("lulu")
+
+OTUtable <- read.fasta(Aquarium_2.clustered.fasta)
+matchlist <- read.table(match_list_Aquarium_2.txt)
+# prepare the files needed for LULU processing
+
+curated_results <- lulu(OTUtable, matchlist)
+# LULU processing with the lulu R function
+
+curated_results
+# shows the OTU names and their abundance after the curation
+```
 
 For more details on LULU, see the original publication [here](https://doi.org/10.1038/nmeth.3869).
