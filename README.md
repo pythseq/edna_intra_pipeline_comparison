@@ -87,7 +87,7 @@ conda deactivate
 ```
 ### Preliminary steps for DADA2
 
-You need to have a recent R version (3.6.2 minimum). If it's not the case, click on this [link](hhttps://cran.r-project.org/) and download it.
+You need to have a recent R version (3.6.2 minimum). If it's not the case, click on this [link](https://cran.r-project.org/) and download it.
 
 Then, open your IDE (RStudio for example), and install the package :
 ```
