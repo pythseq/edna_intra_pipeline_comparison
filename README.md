@@ -51,6 +51,8 @@ The following figure summarizes the twelve pipelines compared in our study :
 
 In our study, we analyze the results of a paired-end sequencing, after extraction and amplification of filtrated eDNA from aquarium seawater, to detect intraspecific haplotypic variability in *Mullus surmuletus*. Only one aquarium is given as example in the scripts.
 
+The following scripts were used for the bioinformatics analysis of [this publication](https://doi.org/10.1002/edn3.269), based on the datasets available [here](https://zenodo.org/record/4570303). 
+
 <a name="install"></a>
 ## II - Installation
 
